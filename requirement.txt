@@ -1,0 +1,14 @@
+Package                     Version
+--------------------------------------------
+matplotlib             3.5.0
+numpy                  1.20.3
+opencv-python          4.5.4.60
+pandas                 1.4.2
+PyYAML                 6.0
+tensorboard            2.7.0
+tensorboardX           2.4.1
+torch                  1.10.0+cu113
+torchvision            0.11.1+cu113
+scipy                  1.7.2
+scikit-learn           1.0.1
+
