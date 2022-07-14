@@ -48,10 +48,10 @@ from humaneva.runs import RunCVAE as RunCVAEHumaneva
 from humaneva.runs import RunDiverseSampling as RunDiverseSamplingHumaneva
 
 parser = argparse.ArgumentParser(description='manual to this script')
-parser.add_argument('--exp_name', type=str, default="h36m_t2", help="h36m_t1 / h36m_t2 / humaneva_t1 / humaneva_t2")
+parser.add_argument('--exp_name', type=str, default="humaneva_t2", help="h36m_t1 / h36m_t2 / humaneva_t1 / humaneva_t2")
 parser.add_argument('--is_train', type=bool, default='', help="")
-parser.add_argument('--is_load', type=bool, default='1', help="")
-parser.add_argument('--is_debug', type=bool, default='1', help="")
+parser.add_argument('--is_load', type=bool, default='', help="")
+parser.add_argument('--is_debug', type=bool, default='', help="")
 
 parser.add_argument('--model_path', type=str, default="", help="")
 
@@ -82,19 +82,12 @@ if args.is_load:
 
 if args.is_train:
     r.run()
-    # r.random_choose_25()
 
 else:
-    diversity, ade, fde, mmade, mmfde, bone, min_bone, max_bone, angle = r.eval(epoch=-1, draw=False)
-    # print("\n Test -->  div {:.4f} -- ade {:.4f} --  fde {:.4f} --  mmade {:.4f} --  mmfde {:.4f} ".format(div,
-    #                                                                                            ade,
-    #                                                                                             fde,
-    #                                                                                             mmade,
-    #                                                                                            mmfde))
-    print(
-        "\n Test -->  div {:.4f} | ade {:.4f} |  fde {:.4f}  | mmade {:.4f} |  mmfde {:.4f} |  bone {:.4f} [{:.4f}, {:.4f}] |  angle {:.4f}".format(
-            diversity,
-            ade,
-            fde,
-            mmade,
-            mmfde, bone, min_bone, max_bone, angle))
+    diversity, ade, fde, mmade, mmfde = r.eval(epoch=-1, draw=True)
+    print("\n Test -->  div {:.4f} -- ade {:.4f} --  fde {:.4f} --  mmade {:.4f} --  mmfde {:.4f} ".format(diversity,
+                                                                                               ade,
+                                                                                                fde,
+                                                                                                mmade,
+                                                                                               mmfde))
+

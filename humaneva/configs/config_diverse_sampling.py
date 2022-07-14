@@ -19,13 +19,14 @@ class ConfigDiverseSampling():
         self.platform = getpass.getuser()
         self.exp_name = exp_name
 
+        self.class_num = 5
+
         # >>> model
 
         self.z_dim = 64
         self.hidden_dim = 256
         self.base_dim = 128
         self.base_num_p1 = 40
-        self.base_num_p2 = self.base_num_p1
 
         # >>> data
         self.t_his = 15
@@ -67,8 +68,7 @@ class ConfigDiverseSampling():
         self.epoch_t2 = 1500
         self.epoch_fix_t2 = 100
 
-        self.temperature_p1 = 0.85
-        self.temperature_p2 = 1
+        self.temperature_p1 = 0.85 # 1
         self.minthreshold = 20
         self.dlow_scale = 50
 
@@ -76,12 +76,7 @@ class ConfigDiverseSampling():
         #  gsps t2 > divp1 : divp2 : ade : mmade : recovhis : limblen : angle : lkh = 5(15) : 10(50) : 2 : 1, 100: 500 : 100 : 0.01
         self.t2_kl_p1_weight = 0.1 # 0.2
         self.t2_ade_weight = 25 # 10
-        self.t2_recons_mm_weight = 0 # 8
         self.t2_diversity_weight = 100 # 30, ablation hinge v.s. energy 时，energy 这一权重设置了 100 / 300
-
-        self.t2_limblen_weight = 10000
-        self.t2_angle_weight = 0 # 100
-        self.t2_recoverhis_weight = 0 # 100
 
         self.dropout_rate = 0
 
@@ -95,34 +90,9 @@ class ConfigDiverseSampling():
             os.makedirs(os.path.join(self.ckpt_dir, "images"))
 
         if self.platform == "Drolab":
-
-            # self.base_data_dir = os.path.join(r"F:\model_report_data\stochastic_prediction\gsps")
-            self.base_data_dir = os.path.join(r"E:\PythonWorkspace\stochastic_human_motion_prediction\levon_write\humaneva_d220323\gsps_datas")
-            self.num_works = 0
-
-        elif self.platform == "dlw":
-            self.base_data_dir = os.path.join(r"/mnt/hdd4T/dlw_home/model_report_data/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/ml_group/songbo/danglingwei204"):
-            self.base_data_dir = os.path.join(r"/home/ml_group/songbo/danglingwei204/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei209"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei209/datas/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei208"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei208/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "droli":
-            self.base_data_dir = os.path.join(r"C:\Users\droli\Desktop\acc_div\acc_div", "res")
-            self.num_works = 0
-
-        elif self.platform == "yongwei":
-            self.base_data_dir = os.path.join(r"/home/yongwei/Code/DLW/humaneva_d220323/gsps_datas")
-            self.num_works = 4
+            self.base_data_dir = os.path.join(r"./dataset")
+        else:
+            self.base_data_dir = os.path.join(r"./dataset")
 
         self.valid_angle_path = os.path.join(self.base_data_dir, "humaneva_valid_angle.p")
         # >>> gsps

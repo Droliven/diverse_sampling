@@ -20,8 +20,8 @@ class ConfigCVAE():
         self.exp_name = exp_name
 
         # >>> model
-        self.nk = 500
-        self.seperate_head = 100
+        self.nk = 50
+        self.seperate_head = 25
 
         self.z_dim = 64
         self.hidden_dim = 256
@@ -76,29 +76,9 @@ class ConfigCVAE():
             os.makedirs(os.path.join(self.ckpt_dir, "images"))
 
         if self.platform == "Drolab":
-
-            self.base_data_dir = os.path.join(r"F:\model_report_data\stochastic_prediction\gsps")
-            self.num_works = 0
-
-        elif self.platform == "dlw":
-            self.base_data_dir = os.path.join(r"/mnt/hdd4T/dlw_home/model_report_data/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/ml_group/songbo/danglingwei204"):
-            self.base_data_dir = os.path.join(r"/home/ml_group/songbo/danglingwei204/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei209"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei209/datas/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei208"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei208/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "droli":
-            self.base_data_dir = os.path.join(r"C:\Users\droli\Desktop\acc_div\acc_div", "res")
-            self.num_works = 0
+            self.base_data_dir = os.path.join(r"./dataset")
+        else:
+            self.base_data_dir = os.path.join(r"./dataset")
 
         self.valid_angle_path = os.path.join(self.base_data_dir, "humaneva_valid_angle.p")
         # >>> gsps

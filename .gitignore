@@ -1,5 +1,5 @@
+!.gitignore
 .idea/
-ckpt/*
-!ckpt/pretrained/
 __pycache__/
 test*.*
+*.zip

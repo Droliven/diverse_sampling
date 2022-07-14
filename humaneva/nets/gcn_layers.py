@@ -69,11 +69,7 @@ class GraphConvBlock(nn.Module):
 
         self.gcn = GraphConv(in_len, out_len, in_node_n=in_node_n, out_node_n=out_node_n, bias=bias)
         self.bn = nn.BatchNorm1d(out_node_n * out_len)
-        # self.bn = nn.BatchNorm2d(3)
-        # self.act = nn.LeakyReLU(leaky)
         self.act = nn.Tanh()
-        # self.act = nn.ReLU()
-        # self.act = nn.GELU()
         if self.dropout_rate > 0:
             self.drop = nn.Dropout(dropout_rate)
 

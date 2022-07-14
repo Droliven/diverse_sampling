@@ -173,9 +173,7 @@ def loss_valid_angle_t1(pred, valid_ang, data="h36m"):
     ang_names = list(valid_ang.keys())
 
     pred = pred.permute(0, 2, 1).contiguous().view(-1, vc)
-    if data == "h36m":
-        ang_cos = h36m_valid_angle_check_torch(pred)
-    elif data == "humaneva":
+    if data == "humaneva":
         ang_cos = humaneva_valid_angle_check_torch(pred)
 
     loss = torch.tensor(0, dtype=pred.dtype, device=pred.device)
@@ -202,9 +200,7 @@ def loss_valid_angle_t2(pred, valid_ang, data="h36m"):
     ang_names = list(valid_ang.keys())
 
     pred = pred.permute(0, 1, 3, 2).contiguous().view(-1, vc)
-    if data == "h36m":
-        ang_cos = h36m_valid_angle_check_torch(pred)
-    elif data == "humaneva":
+    if data == "humaneva":
         ang_cos = humaneva_valid_angle_check_torch(pred)
 
     loss = torch.tensor(0, dtype=pred.dtype, device=pred.device)
@@ -292,21 +288,6 @@ def compute_diversity(pred):  # [1000, 48, 100], [1, 48, 100], [n, 48, 100]
     # div = div.mean()
     return div
 
-# def compute_diversity_hinge_exp(pred, minthreshold, scale=50):  # [1000, 48, 100], [1, 48, 100], [n, 48, 100]
-#     h, vc, t = pred.shape
-#     triu_indices = np.triu_indices(h, k=1)
-#
-#     pred = pred.reshape(h, -1)  # 1000, 48*100
-#     div = torch.norm(pred[:, None, :] - pred[None, :, :], p=2, dim=2).square() #
-#     # # 方案一
-#     # div = torch.relu(minthreshold - div)
-#     # div = (div / scale).exp()  # b, 45
-#     # 方案二
-#     div = (-div / scale).exp()
-#
-#     div = div[triu_indices]
-#     # div = div.mean()
-#     return div
 
 def compute_diversity_between_twopart(part_a, part_b):  # [10, 48, 100], [1, 48, 100], [n, 48, 100]
     assert part_a.shape == part_b.shape
@@ -401,9 +382,7 @@ def compute_angle_error(pred, valid_ang, data="h36m"):
     ang_names = list(valid_ang.keys())
 
     pred = pred.permute(0, 2, 1).contiguous().view(-1, vc)  # n*100, 48
-    if data == "h36m":
-        ang_cos = h36m_valid_angle_check_torch(pred)
-    elif data == "humaneva":
+    if data == "humaneva":
         ang_cos = humaneva_valid_angle_check_torch(pred)
 
     loss = torch.tensor(0, dtype=pred.dtype, device=pred.device)

@@ -74,6 +74,7 @@ class ConfigCVAE():
         self.dropout_rate = 0
 
         self.device = device
+        self.num_works = num_works
 
         self.ckpt_dir = os.path.join("./ckpt/", exp_name)
         if not os.path.exists(os.path.join(self.ckpt_dir, "models")):
@@ -82,29 +83,9 @@ class ConfigCVAE():
             os.makedirs(os.path.join(self.ckpt_dir, "images"))
 
         if self.platform == "Drolab":
-
-            self.base_data_dir = os.path.join(r"F:\model_report_data\stochastic_prediction\gsps")
-            self.num_works = 0
-
-        elif self.platform == "dlw":
-            self.base_data_dir = os.path.join(r"/mnt/hdd4T/dlw_home/model_report_data/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/ml_group/songbo/danglingwei204"):
-            self.base_data_dir = os.path.join(r"/home/ml_group/songbo/danglingwei204/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei209"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei209/datas/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei208"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei208/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "droli":
-            self.base_data_dir = os.path.join(r"C:\Users\droli\Desktop\acc_div\acc_div", "res")
-            self.num_works = 0
+            self.base_data_dir = os.path.join(r"./dataset")
+        else:
+            self.base_data_dir = os.path.join(r"./dataset")
 
         self.valid_angle_path = os.path.join(self.base_data_dir, "h36m_valid_angle.p")
         # >>> gsps

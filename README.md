@@ -21,105 +21,114 @@
 
 ## Overview
 
-<a href="./assets/7627-poster.pdf">
-  <img src="./assets/7627-poster.png" />
+<a href="./assets/teaser.png">
+  <img src="./assets/teaser.png" />
 </a>
-
+  <p> Different strategies for sampling diverse results from an imbalanced multimodal distribution. The vanilla CVAE model randomly samples latent codes from a prior distribution which are then decoded into results that only reside in the major mode of the target distribution. DLow first generates multiple Gaussian distributions, and then samples latent codes from different Gaussian priors. The Gaussian priors can be viewed as corresponding to different modes of the target distribution, therefore this method can cover more modes than random sampling. Our method generates multiple Gaussian distributions by sampling points from an auxiliary space. Due to the high flexibility and capacity of the space, our method is able to cover even more modes than DLow. The rightmost are the last poses of future pose sequences predicted from a given input, all stacked together to visually show that our results are more diverse than the others.
+  </p>
 
 
 ## Dependencies
 
-* Pytorch 1.10.0+cu113
-* Python 3.9.7
-* Nvidia RTX 3090
+```
+Nvidia RTX 3090
+Python                 3.9.7
+matplotlib             3.5.0
+numpy                  1.20.3
+opencv-python          4.5.4.60
+pandas                 1.4.2
+PyYAML                 6.0
+tensorboard            2.7.0
+tensorboardX           2.4.1
+torch                  1.10.0+cu113
+torchvision            0.11.1+cu113
+scipy                  1.7.2
+scikit-learn           1.0.1
+```
 
-[//]: # (## Get the data)
+## Get the data and pretrained models
 
-[//]: # ([Human3.6m]&#40;http://vision.imar.ro/human3.6m/description.php&#41; in exponential map can be downloaded from [here]&#40;http://www.cs.stanford.edu/people/ashesh/h3.6m.zip&#41;.)
+Dataset and pretrained models can be found via the [Diverse Sampling Resources Link](https://drive.google.com/drive/folders/1MIKw4bbafLeW8HYWOv5CDR5G7gYi19WZ?usp=sharing), download them and then
 
-[//]: # ()
-[//]: # ([HumanEva-I]&#40;http://mocap.cs.cmu.edu/&#41; was obtained from the [repo]&#40;https://github.com/chaneyddtt/Convolutional-Sequence-to-Sequence-Model-for-Human-Dynamics&#41; of ConvSeq2Seq paper.)
++ unzip `dataset.zip` to `./dataset`
++ unzip `pretrained.zip` to `./ckpt/pretrained`
++ unzip `classifier.zip` to `./ckpt/classifier`
 
-[//]: # ()
-[//]: # (## About datasets)
+then the dictionary becomes:
 
-[//]: # ()
-[//]: # (Human3.6M dataset)
+```
+diverse_sampling
+├─dataset
+│  │  .gitignore
+│  │  data_3d_h36m.npz
+│  │  data_3d_h36m_test.npz
+│  │  data_3d_humaneva15.npz
+│  │  data_3d_humaneva15_test.npz
+│  │  h36m_valid_angle.p
+│  │  humaneva_valid_angle.p
+│  ├─data_multi_modal
+│  │      data_candi_t_his25_t_pred100_skiprate20.npz
+│  │      t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz
+│  └─humaneva_multi_modal
+│          data_candi_t_his15_t_pred60_skiprate15.npz
+│          t_his15_1_thre0.500_t_pred60_thre0.010_index_filterd.npz
+└─ckpt
+   ├─classifier
+   │     .gitignore
+   │      h36m_classifier.pth
+   │      humaneva_classifier.pth
+   └─pretrained
+           .gitignore
+           h36m_t1.pth
+           h36m_t2.pth
+           humaneva_t1.pth
+           humaneva_t2.pth   
+```
 
-[//]: # ()
-[//]: # (+ A pose in h3.6m has 32 joints, from which we choose 22, and build the multi-scale by 22 -> 12 -> 7 -> 4 dividing manner.)
-
-[//]: # (+ We use S5 / S11 as test / valid dataset, and the rest as train dataset, testing is done on the 15 actions separately, on each we use all data instead of the randomly selected 8 samples.)
-
-[//]: # (+ Some joints of the origin 32 have the same position)
-
-[//]: # (+ The input / output length is 10 / 25)
-
-[//]: # ()
-[//]: # (HumanEva-I dataset)
-
-[//]: # ()
-[//]: # (+ A pose in cmu has 38 joints, from which we choose 25, and build the multi-scale by 25 -> 12 -> 7 -> 4 dividing manner.)
-
-[//]: # (+ CMU does not have valid dataset, testing is done on the 8 actions separately, on each we use all data instead of the random selected 8 samples.)
-
-[//]: # (+ Some joints of the origin 38 have the same position)
-
-[//]: # (+ The input / output length is 10 / 25)
-
-[//]: # ()
-[//]: # (## Train)
-
-[//]: # ()
-[//]: # (+ train on Human3.6M:)
-
-[//]: # ()
-[//]: # (  `python main.py --exp_name=h36m --is_train=1 --output_n=25 --dct_n=35 --test_manner=all`)
-
-[//]: # ()
-[//]: # (+ train on CMU Mocap:)
-
-[//]: # ()
-[//]: # (  `python main.py --exp_name=cmu --is_train=1 --output_n=25 --dct_n=35 --test_manner=all`)
-
-[//]: # ()
-[//]: # ()
-[//]: # (## Evaluate and visualize results)
-
-[//]: # ()
-[//]: # (+ evaluate on Human3.6M:)
-
-[//]: # ()
-[//]: # (  `python main.py --exp_name=h36m --is_load=1 --model_path=ckpt/pretrained/h36m_in10out25dctn35_best_err57.9256.pth --output_n=25 --dct_n=35 --test_manner=all`)
-
-[//]: # ()
-[//]: # (+ evaluate on CMU Mocap: )
-
-[//]: # (  )
-[//]: # (  `python main.py --exp_name=cmu --is_load=1 --model_path=ckpt/pretrained/cmu_in10out25dctn35_best_err37.2310.pth --output_n=25 --dct_n=35 --test_manner=all`)
-
-[//]: # ()
-[//]: # (## Results)
-
-[//]: # ()
-[//]: # (H3.6M-10/25/35-all | 80 | 160 | 320 | 400 | 560 | 1000 | -)
-
-[//]: # (:----: | :----: | :----: | :----: | :----: | :----: | :----: | :----:)
-
-[//]: # (walking | 12.16 | 22.65 | 38.65 | 45.24 | 52.72 | 63.05 | -)
-
-[//]: # ()
-[//]: # ()
-[//]: # (****)
-
-[//]: # ()
-[//]: # (CMU-10/25/35-all | 80 | 160 | 320 | 400 | 560 | 1000 | -)
-
-[//]: # (:----: | :----: | :----: | :----: | :----: | :----: | :----: | :----:)
-
-[//]: # (basketball | 10.24 | 18.64 | 36.94 | 45.96 | 61.12 | 86.24 | -)
+## Evaluatation
 
 
++ evaluate on Human3.6M:
+
+  `python main.py --exp_name=h36m_t2 --is_load=1 --model_path=ckpt/pretrained/h36m_t2.pth`
+
++ evaluate on HumanEva-I:
+
+  `python main.py --exp_name=humaneva_t2 --is_load=1 --model_path=ckpt/pretrained/humaneva_t2.pth`
+
+
+## Calculate perceptual scores (FID and ACC)
+
++ For Human3.6M:
+
+  `python main_classifier.py --exp_name=h36m_t2`
+
++ For HumanEva-I:
+  
+  `python main_classifier.py --exp_name=humaneva_t2`
+
+
+## Train
+
+
++ train on Human3.6M:
+  - train CVAE on Human3.6M:
+  
+     `python main.py --exp_name=h36m_t1 --is_train=1`
+  
+  - train DiverseSampling on Human3.6M:
+  
+    `python main.py --exp_name=h36m_t2 --is_train=1`
+
++ train on HumanEva-I:
+    - train CVAE on HumanEva-I:
+  
+      `python main.py --exp_name=humaneva_t1 --is_train=1`
+  
+    - train DiverseSampling on HumanEva-I:
+  
+      `python main.py --exp_name=humaneva_t2 --is_train=1`
+    
   
 ## Citation
 

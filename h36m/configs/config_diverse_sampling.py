@@ -19,15 +19,15 @@ class ConfigDiverseSampling():
         self.platform = getpass.getuser()
         self.exp_name = exp_name
 
-        # >>> model
+        self.class_num = 15 # 15
 
+        # >>> model
         self.z_dim = 64
         self.dct_n = 10
         self.hidden_dim = 256
         self.node_n = 16
         self.base_dim = 128
         self.base_num_p1 = 40
-        self.base_num_p2 = self.base_num_p1
 
         # >>> data
         self.t_his = 25
@@ -68,22 +68,14 @@ class ConfigDiverseSampling():
         self.epoch_t2 = 1500
         self.epoch_fix_t2 = 100
 
-        self.temperature_p1 = 0.85
-        self.temperature_p2 = 1
-
+        self.temperature_p1 = 0.85 # 1
         self.minthreshold = 25
 
         # todo: dlow t2 > kl:ade:div = 1:2:25;
         #  gsps t2 > recovhis : limblen : angle : divp1 : divp2 : ade : mmade : lkh = 100: 500 : 100 : 8 : 25 : 2 : 1, 0.01
         self.t2_kl_p1_weight = 0.5 # 1
-
         self.t2_ade_weight = 40 # 10
-        self.t2_recons_mm_weight = 0 # 5
         self.t2_diversity_weight = 20 # 25
-
-        self.t2_limblen_weight = 10000
-        self.t2_angle_weight = 0 # 100
-        self.t2_recoverhis_weight = 0 # 100
 
         self.dropout_rate = 0
 
@@ -97,33 +89,12 @@ class ConfigDiverseSampling():
             os.makedirs(os.path.join(self.ckpt_dir, "images"))
 
         if self.platform == "Drolab":
-            self.base_data_dir = os.path.join(r"F:\model_report_data\stochastic_prediction\gsps")
-            self.num_works = 0
-
-        elif self.platform == "dlw":
-            self.base_data_dir = os.path.join(r"/mnt/hdd4T/dlw_home/model_report_data/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/ml_group/songbo/danglingwei204"):
-            self.base_data_dir = os.path.join(r"/home/ml_group/songbo/danglingwei204/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei209"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei209/datas/gsps")
-            self.num_works = 4
-
-        elif self.platform == "songbo" and os.path.exists(r"/home/songbo/danglingwei208"):
-            self.base_data_dir = os.path.join(r"/home/songbo/danglingwei208/datasets/gsps")
-            self.num_works = 4
-
-        elif self.platform == "droli":
-            self.base_data_dir = os.path.join(r"C:\Users\droli\Desktop\acc_div\acc_div", "res")
-            self.num_works = 0
+            self.base_data_dir = os.path.join(r"./dataset")
+        else:
+            self.base_data_dir = os.path.join(r"./dataset")
 
         self.valid_angle_path = os.path.join(self.base_data_dir, "h36m_valid_angle.p")
         # >>> gsps
-        self.similar_idx_path = os.path.join(self.base_data_dir, "data_multi_modal",
-                                             "t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz")
-        self.similar_pool_path = os.path.join(self.base_data_dir, "data_multi_modal",
-                                              "data_candi_t_his25_t_pred100_skiprate20.npz")
+        self.similar_idx_path = os.path.join(self.base_data_dir, "data_multi_modal", "t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz")
+        self.similar_pool_path = os.path.join(self.base_data_dir, "data_multi_modal", "data_candi_t_his25_t_pred100_skiprate20.npz")
         self.model_path_t1 = os.path.join(r"./ckpt/pretrained", "h36m_t1.pth")

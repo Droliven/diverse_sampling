@@ -13,7 +13,7 @@ from ..datas import MaoweiGSPS_Dynamic_Seq_H36m, MaoweiGSPS_Dynamic_Seq_H36m_Ext
 from ..nets import CVAE
 from ..configs import ConfigCVAE
 from .losses import loss_recover_history_t1, loss_recons, loss_kl_normal,loss_limb_length_t1, loss_valid_angle_t1, compute_diversity, compute_ade, compute_fde, compute_mmade, compute_mmfde, \
-    compute_bone_percent_error, compute_angle_error, compute_diversity_between_twopart
+    compute_diversity_between_twopart
 
 from torch.optim import Adam, lr_scheduler
 import torch
@@ -29,7 +29,7 @@ import pickle
 
 
 class RunCVAE():
-    def __init__(self, exp_name="base_cvaegcndct", device="cuda:0", num_works=0, is_debug=False, args=None):
+    def __init__(self, exp_name="h36m_t1", device="cuda:0", num_works=0, is_debug=False, args=None):
         super(RunCVAE, self).__init__()
 
         self.is_debug = is_debug
@@ -104,8 +104,8 @@ class RunCVAE():
         self.valid_angle = pickle.load(open(self.cfg.valid_angle_path, "rb"))  # dict 13
         print(f"{'valid angle'} loaded from {self.cfg.valid_angle_path} !")
 
-
         self.summary = SummaryWriter(self.cfg.ckpt_dir)
+
 
     def save(self, checkpoint_path, epoch, curr_err):
         state = {
@@ -116,6 +116,8 @@ class RunCVAE():
             "optimizer": self.optimizer.state_dict(),
         }
         torch.save(state, checkpoint_path)
+        print("saved to {}".format(checkpoint_path))
+
 
     def restore(self, checkpoint_path):
         state = torch.load(checkpoint_path, map_location=self.cfg.device)
@@ -123,9 +125,9 @@ class RunCVAE():
         # self.optimizer.load_state_dict(state["optimizer"])
         # self.lr = state["lr"]
         # self.start_epoch = state["epoch"] + 1
-        curr_err = state["curr_err"]
-        print(
-            "load from epoch {}, lr {}, curr_avg {}.".format(state["epoch"], self.scheduler.get_last_lr()[0], curr_err))
+        # curr_err = state["curr_err"]
+        print("load from {}".format(checkpoint_path))
+
 
     def train(self, epoch, draw=False):
         self.model.train()
@@ -180,8 +182,6 @@ class RunCVAE():
 
             if angle_err > 0:
                 all_loss += angle_err * self.cfg.t1_angle_weight
-
-            # all_loss = recons_error * self.cfg.t1_recons_weight + vec * self.cfg.t1_vec_weight + kl * self.cfg.t1_kl_weight  # 1:1000:0.1
 
             self.optimizer.zero_grad()
             all_loss.backward()
@@ -238,6 +238,7 @@ class RunCVAE():
         self.summary.add_scalar(f"loss/averageangle", average_angle, epoch)
         return average_all_loss, average_recons_error, average_kl, average_vec, average_his, average_limblen, average_angle
 
+
     def eval(self, epoch=-1, draw=False):
         self.model.eval()
 
@@ -246,10 +247,6 @@ class RunCVAE():
         fde = 0
         mmade = 0
         mmfde = 0
-        bone = 0
-        min_bone = 0
-        max_bone = 0
-        angle = 0
         # 画图 ------------------------------------------------------------------------------------------------------
         if not os.path.exists(os.path.join(self.cfg.ckpt_dir, "images", "sample")):
             os.makedirs(os.path.join(self.cfg.ckpt_dir, "images", "sample"))
@@ -263,7 +260,7 @@ class RunCVAE():
             # b, 48, 125
             b, vc, t = datas.shape
             similars = self.test_data.similat_gt_like_dlow[i]  # 0/n, 48, 100
-            if similars.shape[0] == 0:  # todo 这会淡化误差
+            if similars.shape[0] == 0:
                 continue
 
             datas = torch.from_numpy(datas).float().cuda(device=self.cfg.device)
@@ -279,28 +276,23 @@ class RunCVAE():
                 out_dct = out_dct.reshape([b*self.cfg.nk, self.cfg.node_n * 3, -1])  # b*50, 48, 10
                 outputs = reverse_dct_torch(out_dct, self.i_dct_m, self.cfg.t_total)[:, :, self.cfg.t_his:]  # 50, 48, 100
 
-                # cdiv = compute_diversity(pred=outputs).mean()
-                cdiv = []
-                for oidx in range(self.cfg.nk // self.cfg.seperate_head):
-                    cdiv.append(compute_diversity(
-                        outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :,
-                        :]))  # [10, 48, 100], [1, 48, 100]
-                    for ojdx in range(oidx + 1, self.cfg.nk // self.cfg.seperate_head):
-                        cdiv.append(compute_diversity_between_twopart(
-                            outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :, :],
-                            outputs[ojdx * self.cfg.seperate_head:(ojdx + 1) * self.cfg.seperate_head, :,
-                            :]))  # [10, 48, 100], [1, 48, 100]
-                cdiv = torch.cat(cdiv, dim=-1).mean(dim=-1).mean()
-
-
+                cdiv = compute_diversity(pred=outputs).mean()
+                # cdiv = []
+                # for oidx in range(self.cfg.nk // self.cfg.seperate_head):
+                #     cdiv.append(compute_diversity(
+                #         outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :,
+                #         :]))  # [10, 48, 100], [1, 48, 100]
+                #     for ojdx in range(oidx + 1, self.cfg.nk // self.cfg.seperate_head):
+                #         cdiv.append(compute_diversity_between_twopart(
+                #             outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :, :],
+                #             outputs[ojdx * self.cfg.seperate_head:(ojdx + 1) * self.cfg.seperate_head, :,
+                #             :]))  # [10, 48, 100], [1, 48, 100]
+                # cdiv = torch.cat(cdiv, dim=-1).mean(dim=-1).mean()
 
                 cade = compute_ade(outputs, datas[:, :, self.cfg.t_his:])
                 cfde = compute_fde(outputs, datas[:, :, self.cfg.t_his:])
                 cmmade = compute_mmade(outputs, datas[:, :, self.cfg.t_his:], similars)
                 cmmfde = compute_mmfde(outputs, datas[:, :, self.cfg.t_his:], similars)
-
-                cbone, cminbone, cmaxbone = 0, 0, 0 # compute_bone_percent_error(datas[:, :, self.cfg.t_his].view(b, -1, 3), outputs.view(self.cfg.nk, -1, 3, self.cfg.t_pred), self.cfg.parents)
-                cangle = 0 # compute_angle_error(outputs, self.valid_angle, "h36m")
 
 
             diversity += cdiv
@@ -309,21 +301,13 @@ class RunCVAE():
             mmade += cmmade
             mmfde += cmmfde
 
-            bone += cbone
-            min_bone += cminbone
-            max_bone += cmaxbone
-            angle += cangle
-
             if epoch == -1:
-                # print("Test > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f} |  mmade {:.4f} |  mmfde {:.4f} ".format(i,
-                #                                                                                                     cdiv,
-                #                                                                                                     cade,
-                #                                                                                                     cfde,
-                #                                                                                                     cmmade,
-                #                                                                                                     cmmfde))
-                print(
-                    "Test {} + {} > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  |  mmade {:.4f} |  mmfde {:.4f} |  bone {:.4f} |  [{:.4f}, {:.4f}] |  angle {:.4f}".format(
-                        self.cfg.nk, 0, i, cdiv, cade, cfde, cmmade, cmmfde, cbone, cminbone, cmaxbone, cangle))
+                print("Test > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f} |  mmade {:.4f} |  mmfde {:.4f} ".format(i,
+                                                                                                                    cdiv,
+                                                                                                                    cade,
+                                                                                                                    cfde,
+                                                                                                                    cmmade,
+                                                                                                                    cmmfde))
 
             if draw:
                 if i == draw_i:
@@ -361,70 +345,15 @@ class RunCVAE():
         fde /= (i + 1)
         mmade /= (i + 1)
         mmfde /= (i + 1)
-        bone /= (i + 1)
-        min_bone /= (i + 1)
-        max_bone /= (i + 1)
-        angle /= (i + 1)
+
         self.summary.add_scalar(f"Test/div", diversity, epoch)
         self.summary.add_scalar(f"Test/ade", ade, epoch)
         self.summary.add_scalar(f"Test/fde", fde, epoch)
         self.summary.add_scalar(f"Test/mmade", mmade, epoch)
         self.summary.add_scalar(f"Test/mmfde", mmfde, epoch)
 
-        self.summary.add_scalar(f"Test/bone", bone, epoch)
-        self.summary.add_scalar(f"Test/min_bone", min_bone, epoch)
-        self.summary.add_scalar(f"Test/max_bone", max_bone, epoch)
-        self.summary.add_scalar(f"Test/angle", angle, epoch)
+        return diversity, ade, fde, mmade, mmfde
 
-        return diversity, ade, fde, mmade, mmfde, bone, min_bone, max_bone, angle
-
-    def random_choose_preds(self):
-        self.model.eval()
-        dg = self.test_data.onebyone_generator()
-        generator_len = len(self.test_data.similat_gt_like_dlow) if not self.is_debug else 90
-        # random_idx = np.arange(generator_len)
-        # np.random.shuffle(random_idx)
-        # random_idx = list(np.sort(random_idx[:50]))
-        # random_idx = [26, 456, 501, 562, 974,
-        #               1112, 1173, 1239, 1517, 1624,
-        #               1693, 1795, 2272, 2621, 2770,
-        #               2973, 3081, 3496, 3551, 3935,
-        #               3973, 4150, 4472, 4839, 4861]
-        random_idx = [107, 168, 294, 343, 427, 562, 601, 669, 892, 1003, 1100, 1118, 1128, 1210, 1265, 1392, 1931, 2093, 2125, 2142, 2143, 2596, 2606, 2613, 2722, 2731, 2733, 2749, 2967, 3105, 3115, 3143, 3158, 3386, 3603, 3680, 3696, 3881, 4113, 4139, 4364, 4383, 4475, 4535, 4661, 4710, 4782, 4926, 4949, 5096]
-        all_preds = []
-        all_gts = []
-        for i, datas in enumerate(dg):
-            if i in random_idx:
-                # b, 48, 125
-                b, vc, t = datas.shape
-                # similars = self.test_data.similat_gt_like_dlow[i]  # 0/n, 48, 100
-                # if similars.shape[0] == 0:
-                #     continue
-
-                datas = torch.from_numpy(datas).float().cuda(device=self.cfg.device)
-                # similars = torch.from_numpy(similars).float().cuda(device=self.cfg.device)
-                z = torch.randn(b * self.cfg.nk, self.cfg.z_dim).cuda(device=self.cfg.device)
-
-                with torch.no_grad():
-                    padded_inputs = datas[:, :, list(range(self.cfg.t_his)) + [self.cfg.t_his - 1] * self.cfg.t_pred]
-                    padded_inputs_dct = dct_transform_torch(padded_inputs, self.dct_m,
-                                                            dct_n=self.cfg.dct_n)  # b, 48, 10
-                    padded_inputs_dct = padded_inputs_dct.view(b, -1, 3 * self.cfg.dct_n)  # # b, 16, 3*10
-                    padded_inputs_dct = torch.repeat_interleave(padded_inputs_dct, repeats=self.cfg.nk, dim=0)
-
-                    all_outs_dct = self.model.inference(condition=padded_inputs_dct, z=z)  # b*h, 16, 30
-                    all_outs_dct = all_outs_dct.reshape(b * self.cfg.nk, -1, self.cfg.dct_n)  # b*h, 48, 10
-                    outputs = reverse_dct_torch(all_outs_dct, self.i_dct_m, self.cfg.t_total)  # b*h, 48, 125
-
-                    outputs = outputs.view(self.cfg.nk, -1, self.cfg.t_total)[:, :, self.cfg.t_his:]  # 50, 48, 100
-                    all_preds.append(outputs.cpu().data.numpy())
-                    all_gts.append(datas.cpu().data.numpy())
-
-        all_preds = np.stack(all_preds, axis=0)
-        np.save(os.path.join(f"./supp_h36m_cvae_preds{self.cfg.nk}.npy"), all_preds) # n, 50, 48, 100
-
-        all_gts = np.stack(all_gts, axis=0) # n, 1, 48, 125
-        np.save(os.path.join(f"./supp_h36m_cvae_gts{self.cfg.nk}.npy"), all_gts)
 
     def run(self):
         for epoch in range(self.start_epoch, self.cfg.epoch_t1 + 1):
@@ -441,23 +370,14 @@ class RunCVAE():
             else:
                 test_interval = 20
             if epoch % test_interval == 0:
-                diversity, ade, fde, mmade, mmfde, bone, min_bone, max_bone, angle = self.eval(epoch=epoch, draw=True if epoch % 50 == 0 else False)
-                # print("Test > epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f} |  mmade {:.4f} |  mmfde {:.4f} ".format(
-                #     epoch,
-                #     div,
-                #     ade,
-                #     fde,
-                #     mmade,
-                #     mmfde))
-
-                print(
-                    "Test --+ epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  | mmade {:.4f} |  mmfde {:.4f} |  bone {:.4f} [{:.4f}, {:.4f}] |  angle {:.4f}".format(
-                        epoch,
-                        diversity,
-                        ade,
-                        fde,
-                        mmade,
-                        mmfde, bone, min_bone, max_bone, angle))
+                diversity, ade, fde, mmade, mmfde = self.eval(epoch=epoch, draw=True if epoch % 50 == 0 else False)
+                print("Test > epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f} |  mmade {:.4f} |  mmfde {:.4f} ".format(
+                    epoch,
+                    diversity,
+                    ade,
+                    fde,
+                    mmade,
+                    mmfde))
 
             if epoch % 50 == 0:
                 self.save(

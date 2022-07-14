@@ -13,11 +13,9 @@ from ..datas import MaoweiGSPS_Dynamic_Seq_H36m, draw_multi_seqs_2d, get_dct_mat
 from ..nets import DiverseSampling
 from ..nets import CVAE
 from ..configs import ConfigDiverseSampling
-from .losses import loss_kl_normal, loss_recons_adelike, loss_recons_mmadelike, loss_diversity_hinge_divide, \
-    loss_diversity_hinge_between_two_part, \
-    loss_limb_length_t2, loss_recover_history_t2, loss_valid_angle_t2, compute_diversity, \
-    compute_diversity_between_twopart, compute_ade, compute_fde, compute_mmade, compute_mmfde, \
-    compute_bone_percent_error, compute_angle_error
+from .losses import loss_kl_normal, loss_recons_adelike, loss_diversity_hinge_divide, \
+    compute_diversity, \
+    compute_ade, compute_fde, compute_mmade, compute_mmfde
 
 from torch.optim import Adam, lr_scheduler
 import torch
@@ -61,7 +59,7 @@ class RunDiverseSampling():
         self.model_t1 = CVAE(node_n=self.cfg.node_n, hidden_dim=self.cfg.hidden_dim, z_dim=self.cfg.z_dim,
                                      dct_n=self.cfg.dct_n, dropout_rate=self.cfg.dropout_rate)
         self.model = DiverseSampling(node_n=self.cfg.node_n, hidden_dim=self.cfg.hidden_dim,
-                                                      base_dim=self.cfg.base_dim, base_num_p1=self.cfg.base_num_p1, base_num_p2=self.cfg.base_num_p2,
+                                                      base_dim=self.cfg.base_dim, base_num_p1=self.cfg.base_num_p1,
                                                       z_dim=self.cfg.z_dim, dct_n=self.cfg.dct_n,
                                                       dropout_rate=self.cfg.dropout_rate)
 
@@ -124,6 +122,7 @@ class RunDiverseSampling():
 
         self.summary = SummaryWriter(self.cfg.ckpt_dir)
 
+
     def _sample_weight_gumbel_softmax(self, logits, temperature=1, eps=1e-20):
         # b*h, 1, 10
         assert temperature > 0, "temperature must be greater than 0 !"
@@ -136,6 +135,7 @@ class RunDiverseSampling():
         y = torch.softmax(y, dim=-1)
         return y
 
+
     def save(self, checkpoint_path, epoch, curr_err):
         state = {
             "epoch": epoch,
@@ -145,6 +145,8 @@ class RunDiverseSampling():
             "optimizer": self.optimizer.state_dict(),
         }
         torch.save(state, checkpoint_path)
+        print("saved to {}".format(checkpoint_path))
+
 
     def restore(self, checkpoint_path):
         state = torch.load(checkpoint_path, map_location=self.cfg.device)
@@ -152,23 +154,17 @@ class RunDiverseSampling():
         # self.optimizer.load_state_dict(state["optimizer"])
         # self.lr = state["lr"]
         # self.start_epoch = state["epoch"] + 1
-        curr_err = state["curr_err"]
-        print(
-            "load from epoch {}, lr {}, curr_avg {}.".format(state["epoch"], self.scheduler.get_last_lr()[0], curr_err))
+        # curr_err = state["curr_err"]
+        print("load from {}".format(checkpoint_path))
+
 
     def train(self, epoch, draw=False):
         self.model.train()
 
         average_allloss = 0
         average_kls_p1 = 0
-
         average_adeerrors = 0
-        average_mmadeerrors = 0
         average_hinges = 0
-
-        average_his = 0
-        average_limblen = 0
-        average_angle = 0
 
         dg = self.train_data.batch_generator()
         generator_len = self.cfg.sub_len_train // self.train_data.batch_size if not self.is_debug else 200 // self.train_data.batch_size
@@ -185,7 +181,7 @@ class RunDiverseSampling():
             datas = torch.from_numpy(datas).float().cuda(device=self.cfg.device)
             similars = torch.from_numpy(similars).float().cuda(device=self.cfg.device)
             eps = torch.randn((b, self.cfg.z_dim), device=self.cfg.device)
-            # todo 训练过程要统一
+
             repeated_eps = torch.repeat_interleave(eps, repeats=self.cfg.nk, dim=0)
 
             with torch.no_grad():
@@ -196,12 +192,9 @@ class RunDiverseSampling():
             # >>> many bases
             logtics = torch.ones((b * self.cfg.nk, 1, self.cfg.base_num_p1), device=self.cfg.device) / self.cfg.base_num_p1  # b*h, 1, 10
             many_weights = self._sample_weight_gumbel_softmax(logtics, temperature=self.cfg.temperature_p1)  # b*h, 1, 10
-            all_z_p1, all_mean_p1, all_logvar_p1 = self.model(condition=padded_inputs_dct, repeated_eps=repeated_eps, many_weights=many_weights,
-                                                              temperature=None,
-                                                              multi_modal_head=self.cfg.nk,
-                                                              mode="p1")  # b*(10), 128
+            all_z, all_mean_p1, all_logvar_p1 = self.model(condition=padded_inputs_dct, repeated_eps=repeated_eps, many_weights=many_weights,
+                                                              multi_modal_head=self.cfg.nk)  # b*(10), 128
 
-            all_z = all_z_p1
 
             all_outs_dct = self.model_t1.inference(
                 condition=torch.repeat_interleave(padded_inputs_dct, repeats=self.cfg.nk, dim=0),
@@ -214,24 +207,13 @@ class RunDiverseSampling():
             kls_p1 = loss_kl_normal(all_mean_p1, all_logvar_p1)
             adeerrors = loss_recons_adelike(gt=datas[:, :, self.cfg.t_his:],
                                             pred=outputs[:, :, :, self.cfg.t_his:])
-            mmadeerrors = loss_recons_mmadelike(similars=similars[:, :, :, self.cfg.t_his:],
-                                                pred=outputs[:, :, :, self.cfg.t_his:])
             all_hinges = loss_diversity_hinge_divide(outputs[:, :, :, self.cfg.t_his:],
                                                      minthreshold=self.cfg.minthreshold,
                                                      seperate_head=self.cfg.seperate_head)
 
-            recovrhis_err = 0  # loss_recover_history_t2(outputs[:, :, :, :self.cfg.t_his], datas[:, :, :self.cfg.t_his])  # 这里用 25 帧
-            limblen_err = loss_limb_length_t2(pred=outputs, gt=datas, parent_17=self.cfg.parents)  # 这里用 125帧
-            angle_err = 0 # loss_valid_angle_t2(outputs[:, :, :, self.cfg.t_his:], self.valid_angle, data="h36m")
-
             all_loss = kls_p1 * self.cfg.t2_kl_p1_weight \
                        + adeerrors * self.cfg.t2_ade_weight \
-                       + mmadeerrors * self.cfg.t2_recons_mm_weight \
-                       + all_hinges * self.cfg.t2_diversity_weight \
-                       + limblen_err * self.cfg.t2_limblen_weight
-
-            if angle_err > 0:
-                all_loss += angle_err * self.cfg.t2_angle_weight
+                       + all_hinges * self.cfg.t2_diversity_weight
 
             self.optimizer.zero_grad()
             all_loss.backward()
@@ -241,12 +223,7 @@ class RunDiverseSampling():
             average_allloss += all_loss.cpu().data.numpy()
             average_kls_p1 += kls_p1.cpu().data.numpy()
             average_adeerrors += adeerrors.cpu().data.numpy()
-            average_mmadeerrors += mmadeerrors.cpu().data.numpy()
             average_hinges += all_hinges.cpu().data.numpy()
-
-            average_his += 0  # recovrhis_err.cpu().data.numpy()
-            average_limblen += limblen_err.cpu().data.numpy()
-            average_angle += 0  # angle_err.cpu().data.numpy()
 
             # 画图
             if draw:
@@ -277,24 +254,14 @@ class RunDiverseSampling():
         average_allloss /= (i + 1)
         average_kls_p1 /= (i + 1)
         average_adeerrors /= (i + 1)
-        average_mmadeerrors /= (i + 1)
         average_hinges /= (i + 1)
-
-        average_his /= (i + 1)
-        average_limblen /= (i + 1)
-        average_angle /= (i + 1)
 
         self.summary.add_scalar("loss/average_all", average_allloss, epoch)
         self.summary.add_scalar("loss/average_kls_p1", average_kls_p1, epoch)
         self.summary.add_scalar("loss/average_ades", average_adeerrors, epoch)
-        self.summary.add_scalar("loss/average_mmades", average_mmadeerrors, epoch)
         self.summary.add_scalar("loss/average_hinges", average_hinges, epoch)
 
-        self.summary.add_scalar(f"loss/averagerhis", average_his, epoch)
-        self.summary.add_scalar(f"loss/averagelimblen", average_limblen, epoch)
-        self.summary.add_scalar(f"loss/averageangle", average_angle, epoch)
-
-        return average_allloss, average_adeerrors, average_mmadeerrors, average_hinges, average_kls_p1, average_limblen, average_angle
+        return average_allloss, average_adeerrors, average_hinges, average_kls_p1
 
 
     def eval(self, epoch=-1, draw=False):
@@ -305,10 +272,6 @@ class RunDiverseSampling():
         fde = 0
         mmade = 0
         mmfde = 0
-        bone = 0
-        min_bone = 0
-        max_bone = 0
-        angle = 0
         # 画图 ------------------------------------------------------------------------------------------------------
         if not os.path.exists(os.path.join(self.cfg.ckpt_dir, "images", "sample")):
             os.makedirs(os.path.join(self.cfg.ckpt_dir, "images", "sample"))
@@ -322,7 +285,7 @@ class RunDiverseSampling():
             # b, 48, 125
             b, vc, t = datas.shape
             similars = self.test_data.similat_gt_like_dlow[i]  # 0/n, 48, 100
-            if similars.shape[0] == 0:  # todo 这会淡化误差
+            if similars.shape[0] == 0:
                 continue
 
             datas = torch.from_numpy(datas).float().cuda(device=self.cfg.device)
@@ -333,10 +296,6 @@ class RunDiverseSampling():
                 padded_inputs_dct = dct_transform_torch(padded_inputs, self.dct_m, dct_n=self.cfg.dct_n)  # b, 48, 10
                 padded_inputs_dct = padded_inputs_dct.view(b, -1, 3 * self.cfg.dct_n)  # # b, 16, 3*10
 
-                # eps = torch.randn((b, self.cfg.z_dim), device=self.cfg.device)
-                # repeated_eps_1 = torch.repeat_interleave(eps, repeats=self.cfg.nk, dim=0)
-                # repeated_eps_2 = torch.repeat_interleave(eps, repeats=self.cfg.nk, dim=0)
-                # todo train generator eps 不共享
                 repeated_eps_1 = torch.randn((b * self.cfg.nk, self.cfg.z_dim), device=self.cfg.device)
 
                 logtics = torch.ones((b * self.cfg.nk, 1, self.cfg.base_num_p1),
@@ -344,9 +303,7 @@ class RunDiverseSampling():
                 many_weights = self._sample_weight_gumbel_softmax(logtics, temperature=self.cfg.temperature_p1)  # b*h, 1, 10
                 all_z_p1, all_mean_p1, all_logvar_p1 = self.model(condition=padded_inputs_dct,
                                                                   repeated_eps=repeated_eps_1, many_weights=many_weights,
-                                                                  temperature=None,
-                                                                  multi_modal_head=self.cfg.nk,
-                                                                  mode="p1")  # b*(10), 128
+                                                                  multi_modal_head=self.cfg.nk)  # b*(10), 128
 
                 all_z = all_z_p1
                 all_outs_dct = self.model_t1.inference(condition=torch.repeat_interleave(padded_inputs_dct, repeats=self.cfg.nk, dim=0), z=all_z)  # b*h, 16, 30
@@ -359,40 +316,29 @@ class RunDiverseSampling():
                 cfde = compute_fde(outputs, datas[:, :, self.cfg.t_his:])
                 cmmade = compute_mmade(outputs, datas[:, :, self.cfg.t_his:], similars)
                 cmmfde = compute_mmfde(outputs, datas[:, :, self.cfg.t_his:], similars)
-                # cdiv = compute_diversity(pred=outputs).mean()
-                cdiv = []
-                for oidx in range(self.cfg.nk // self.cfg.seperate_head):
-                    cdiv.append(compute_diversity(
-                        outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :,
-                        :]))  # [10, 48, 100], [1, 48, 100]
-                    for ojdx in range(oidx + 1, self.cfg.nk // self.cfg.seperate_head):
-                        cdiv.append(compute_diversity_between_twopart(
-                            outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :, :],
-                            outputs[ojdx * self.cfg.seperate_head:(ojdx + 1) * self.cfg.seperate_head, :,
-                            :]))  # [10, 48, 100], [1, 48, 100]
-                cdiv = torch.cat(cdiv, dim=-1).mean(dim=-1).mean()
-                cbone, cminbone, cmaxbone = compute_bone_percent_error(datas[:, :, self.cfg.t_his].view(b, -1, 3),
-                                                                       outputs.view(self.cfg.nk, -1, 3,
-                                                                                    self.cfg.t_pred), self.cfg.parents)
-                cangle = compute_angle_error(outputs, self.valid_angle, "h36m")
+                cdiv = compute_diversity(pred=outputs).mean()
+                # cdiv = []
+                # for oidx in range(self.cfg.nk // self.cfg.seperate_head):
+                #     cdiv.append(compute_diversity(
+                #         outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :,
+                #         :]))  # [10, 48, 100], [1, 48, 100]
+                #     for ojdx in range(oidx + 1, self.cfg.nk // self.cfg.seperate_head):
+                #         cdiv.append(compute_diversity_between_twopart(
+                #             outputs[oidx * self.cfg.seperate_head:(oidx + 1) * self.cfg.seperate_head, :, :],
+                #             outputs[ojdx * self.cfg.seperate_head:(ojdx + 1) * self.cfg.seperate_head, :,
+                #             :]))  # [10, 48, 100], [1, 48, 100]
+                # cdiv = torch.cat(cdiv, dim=-1).mean(dim=-1).mean()
 
             diversity += cdiv
             ade += cade
             fde += cfde
             mmade += cmmade
             mmfde += cmmfde
-            bone += cbone
-            min_bone += cminbone
-            max_bone += cmaxbone
-            angle += cangle
 
             if epoch == -1:
-                # print(
-                #     "Test {} + {} > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  |  mmade {:.4f} |  mmfde {:.4f}".format(
-                #         all_z_p1.shape[0], 0, i, cdiv, cade, cfde, cmmade, cmmfde))
                 print(
-                    "Test {} + {} > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  |  mmade {:.4f} |  mmfde {:.4f} |  bone {:.4f} |  [{:.4f}, {:.4f}] |  angle {:.4f}".format(
-                        all_z_p1.shape[0], 0, i, cdiv, cade, cfde, cmmade, cmmfde, cbone, cminbone, cmaxbone, cangle))
+                    "Test {} + {} > it {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  |  mmade {:.4f} |  mmfde {:.4f}".format(
+                        all_z_p1.shape[0], 0, i, cdiv, cade, cfde, cmmade, cmmfde))
 
             if draw:
                 if i == draw_i:
@@ -428,99 +374,25 @@ class RunDiverseSampling():
         fde /= (i + 1)
         mmade /= (i + 1)
         mmfde /= (i + 1)
-        bone /= (i + 1)
-        min_bone /= (i + 1)
-        max_bone /= (i + 1)
-        angle /= (i + 1)
         self.summary.add_scalar(f"Test/div", diversity, epoch)
         self.summary.add_scalar(f"Test/ade", ade, epoch)
         self.summary.add_scalar(f"Test/fde", fde, epoch)
         self.summary.add_scalar(f"Test/mmade", mmade, epoch)
         self.summary.add_scalar(f"Test/mmfde", mmfde, epoch)
-        self.summary.add_scalar(f"Test/bone", bone, epoch)
-        self.summary.add_scalar(f"Test/min_bone", min_bone, epoch)
-        self.summary.add_scalar(f"Test/max_bone", max_bone, epoch)
-        self.summary.add_scalar(f"Test/angle", angle, epoch)
 
-        return diversity, ade, fde, mmade, mmfde, bone, min_bone, max_bone, angle
-
-    def random_choose_preds(self):
-        self.model.eval()
-        dg = self.test_data.onebyone_generator()
-
-        generator_len = len(self.test_data.similat_gt_like_dlow) if not self.is_debug else 90
-        # random_idx = list(np.sort(np.random.choice(generator_len, 50)))
-
-        # random_idx = [26, 456, 501, 562, 974,
-        #               1112, 1173, 1239, 1517, 1624,
-        #               1693, 1795, 2272, 2621, 2770,
-        #               2973, 3081, 3496, 3551, 3935,
-        #               3973, 4150, 4472, 4839, 4861]
-        random_idx = [107, 168, 294, 343, 427, 562, 601, 669, 892, 1003, 1100, 1118, 1128, 1210, 1265, 1392, 1931, 2093,
-                      2125, 2142, 2143, 2596, 2606, 2613, 2722, 2731, 2733, 2749, 2967, 3105, 3115, 3143, 3158, 3386,
-                      3603, 3680, 3696, 3881, 4113, 4139, 4364, 4383, 4475, 4535, 4661, 4710, 4782, 4926, 4949, 5096]
-        all_preds = []
-        all_gts = []
-        for i, datas in enumerate(dg):
-            if i in random_idx:
-                # b, 48, 125
-                b, vc, t = datas.shape
-                # similars = self.test_data.similat_gt_like_dlow[i]  # 0/n, 48, 100
-                # if similars.shape[0] == 0:
-                #     continue
-
-                datas = torch.from_numpy(datas).float().cuda(device=self.cfg.device)
-                # similars = torch.from_numpy(similars).float().cuda(device=self.cfg.device)
-
-                with torch.no_grad():
-                    padded_inputs = datas[:, :, list(range(self.cfg.t_his)) + [self.cfg.t_his - 1] * self.cfg.t_pred]
-                    padded_inputs_dct = dct_transform_torch(padded_inputs, self.dct_m,
-                                                            dct_n=self.cfg.dct_n)  # b, 48, 10
-                    padded_inputs_dct = padded_inputs_dct.view(b, -1, 3 * self.cfg.dct_n)  # # b, 16, 3*10
-
-                    # eps = torch.randn((b, self.cfg.z_dim), device=self.cfg.device)
-                    # repeated_eps_1 = torch.repeat_interleave(eps, repeats=self.cfg.nk, dim=0)
-                    # todo train generator eps 不共享
-                    repeated_eps_1 = torch.randn((b * self.cfg.nk, self.cfg.z_dim), device=self.cfg.device)
-
-                    logtics = torch.ones((b * self.cfg.nk, 1, self.cfg.base_num_p1), device=self.cfg.device) / self.cfg.base_num_p1  # b*h, 1, 10
-                    many_weights = self._sample_weight_gumbel_softmax(logtics, temperature=self.cfg.temperature_p1)  # b*h, 1, 10
-                    all_z_p1, all_mean_p1, all_logvar_p1 = self.model(condition=padded_inputs_dct,
-                                                                      repeated_eps=repeated_eps_1,
-                                                                      many_weights=many_weights,
-                                                                      temperature=None,
-                                                                      multi_modal_head=self.cfg.nk,
-                                                                      mode="p1")  # b*(10), 128
-
-                    all_z = all_z_p1
-                    all_outs_dct = self.model_t1.inference(
-                        condition=torch.repeat_interleave(padded_inputs_dct, repeats=self.cfg.nk, dim=0),
-                        z=all_z)  # b*h, 16, 30
-                    all_outs_dct = all_outs_dct.reshape(b * self.cfg.nk, -1, self.cfg.dct_n)  # b*h, 48, 10
-                    outputs = reverse_dct_torch(all_outs_dct, self.i_dct_m, self.cfg.t_total)  # b*h, 48, 125
-                    outputs = outputs.view(self.cfg.nk, -1, self.cfg.t_total)[:, :, self.cfg.t_his:]  # 50, 48, 100
-                    all_preds.append(outputs.cpu().data.numpy())
-                    all_gts.append(datas.cpu().data.numpy())
-
-        all_preds = np.stack(all_preds, axis=0) # n, 50, 48, 125
-        np.save(os.path.join(f"./supp_h36m_ours_preds{self.cfg.nk}.npy"), all_preds)
-
-        all_gts = np.stack(all_gts, axis=0) # n, 1, 48, 125
-        np.save(os.path.join(f"./supp_h36m_ours_gts{self.cfg.nk}.npy"), all_gts)
+        return diversity, ade, fde, mmade, mmfde
 
 
     def run(self):
         for epoch in range(self.start_epoch, self.cfg.epoch_t2 + 1):
             self.summary.add_scalar("LR", self.scheduler.get_last_lr()[0], epoch)
 
-            average_allloss, average_adeerrors, average_mmadeerrors, average_hinges, average_kls_p1, average_limblen, average_angle = self.train(
-                epoch, draw=False)
+            average_allloss, average_adeerrors, average_hinges, average_kls_p1 = self.train(epoch, draw=False)
             self.scheduler.step()
 
             print(
-                "Train --> Epoch {}: all {:.4f} | ades {:.4f} |  mmades {:.4f} |  hinges {:.4f} |  klsp1 {:.4f} | losshis {:.6f} | losslimb {:.6f} |  lossangle {:.6f}".format(
-                    epoch, average_allloss, average_adeerrors, average_mmadeerrors, average_hinges, average_kls_p1, 0,
-                    average_limblen, average_angle))
+                "Train --> Epoch {}: all {:.4f} | ades {:.4f} | hinges {:.4f} |  klsp1 {:.4f}".format(
+                    epoch, average_allloss, average_adeerrors, average_hinges, average_kls_p1))
 
 
             if self.is_debug:
@@ -529,22 +401,14 @@ class RunDiverseSampling():
                 test_interval = 20
 
             if epoch % test_interval == 0:
-                diversity, ade, fde, mmade, mmfde, bone, min_bone, max_bone, angle = self.eval(epoch=epoch, draw=False)
-                # print("Test --+ epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  | mmade {:.4f} |  mmfde {:.4f}".format(
-                #     epoch,
-                #     diversity,
-                #     ade,
-                #     fde,
-                #     mmade,
-                #     mmfde))
-                print(
-                    "Test --+ epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  | mmade {:.4f} |  mmfde {:.4f} |  bone {:.4f} [{:.4f}, {:.4f}] |  angle {:.4f}".format(
-                        epoch,
-                        diversity,
-                        ade,
-                        fde,
-                        mmade,
-                        mmfde, bone, min_bone, max_bone, angle))
+                diversity, ade, fde, mmade, mmfde = self.eval(epoch=epoch, draw=False)
+                print("Test --+ epo {}: div {:.4f} | ade {:.4f} |  fde {:.4f}  | mmade {:.4f} |  mmfde {:.4f}".format(
+                    epoch,
+                    diversity,
+                    ade,
+                    fde,
+                    mmade,
+                    mmfde))
 
             if epoch % 50 == 0:
                 self.save(

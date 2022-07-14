@@ -17,28 +17,18 @@ from .gcn_layers import GraphConv, GraphConvBlock, ResGCB
 
 
 class DiverseSampling(Module):
-    def __init__(self, node_n=16, hidden_dim=256, base_dim = 64, z_dim=64, dct_n=10, base_num_p1=10, base_num_p2=10, dropout_rate=0):
+    def __init__(self, node_n=16, hidden_dim=256, base_dim = 64, z_dim=64, dct_n=10, base_num_p1=10, dropout_rate=0):
         super(DiverseSampling, self).__init__()
         self.z_dim = z_dim
         self.base_dim = base_dim
-
         self.base_num_p1 = base_num_p1
-        self.base_num_p2 = base_num_p2
 
         self.condition_enc = Sequential(
             GraphConvBlock(in_len=3*dct_n, out_len=hidden_dim, in_node_n=node_n, out_node_n=node_n, dropout_rate=dropout_rate, bias=True, residual=False),
             ResGCB(in_len=hidden_dim, out_len=hidden_dim, in_node_n=node_n, out_node_n=node_n, dropout_rate=dropout_rate, bias=True, residual=True),
             ResGCB(in_len=hidden_dim, out_len=hidden_dim, in_node_n=node_n, out_node_n=node_n, dropout_rate=dropout_rate, bias=True, residual=True),
-            # ResGCB(in_len=hidden_dim, out_len=hidden_dim, in_node_n=node_n, out_node_n=node_n, dropout_rate=dropout_rate, bias=True, residual=True),
-            # ResGCB(in_len=hidden_dim, out_len=hidden_dim, in_node_n=node_n, out_node_n=node_n, dropout_rate=dropout_rate, bias=True, residual=True),
         )
         self.bases_p1 = Sequential(
-            # Linear(node_n*hidden_dim, 2048),  # 16*256 -> 2048
-            # BatchNorm1d(2048),
-            # Tanh(),
-            # Linear(2048, 1024), # 2048 -> 1024
-            # BatchNorm1d(1024),
-            # Tanh(),
             Linear(node_n*hidden_dim, self.base_num_p1 * self.base_dim), # 1024 -> M * 64
             BatchNorm1d(self.base_num_p1 * self.base_dim),
             Tanh()
@@ -58,7 +48,7 @@ class DiverseSampling(Module):
         )
 
 
-    def forward(self, condition, repeated_eps=None, many_weights=None, temperature=1, multi_modal_head=10, mode=""):
+    def forward(self, condition, repeated_eps=None, many_weights=None, multi_modal_head=10):
         '''
 
         Args:
@@ -84,7 +74,7 @@ class DiverseSampling(Module):
 
 
 if __name__ == '__main__':
-    m = Decoupled(node_n=16, hidden_dim=256, base_dim = 128, z_dim=128, dct_n=10, base_num_p1=10, base_num_p2=10, dropout_rate=0).cuda()
+    m = DiverseSampling(node_n=16, hidden_dim=256, base_dim = 128, z_dim=128, dct_n=10, base_num_p1=10, dropout_rate=0).cuda()
     print(f"{sum(p.numel() for p in m.parameters()) / 1e6}")
 
     # >>> many bases

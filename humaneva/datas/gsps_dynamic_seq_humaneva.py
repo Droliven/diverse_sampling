@@ -16,9 +16,9 @@ import torch
 
 class MaoweiGSPS_Dynamic_Seq_Humaneva():
     def __init__(self, t_his=25, t_pred=100, similar_cnt=10, dynamic_sub_len=5000, batch_size=8,
-                 data_path=r"F:\model_report_data\mocap_motion_prediction\data\h36m_dlow_origin",
-                 similar_idx_path=r"F:\model_report_data\stochastic_prediction\gsps\data_multi_modal\t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz",
-                 similar_pool_path=r"F:\model_report_data\stochastic_prediction\gsps\data_multi_modal\data_candi_t_his25_t_pred100_skiprate20.npz",
+                 data_path=r"./dataset",
+                 similar_idx_path=r"./dataset/data_multi_modal/t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz",
+                 similar_pool_path=r"./dataset//data_multi_modal/data_candi_t_his25_t_pred100_skiprate20.npz",
                  subjects={"train": [f"S{i}" for i in [1, 5, 6, 7, 8]], "test": [f"S{i}" for i in [9, 11]]},
                  joint_used_17=[0, 1, 2, 3, 6, 7, 8, 12, 13, 14, 15, 17, 18, 19, 25, 26, 27],
                  parents_17=[-1, 0, 1, 2, 0, 4, 5, 0, 7, 8, 9, 8, 11, 12, 8, 14, 15], mode="train",
@@ -252,9 +252,9 @@ class MaoweiGSPS_Dynamic_Seq_Humaneva():
 
 class MaoweiGSPS_Dynamic_Seq_Humaneva_ExpandDataset_T1():
     def __init__(self, t_his=15, t_pred=60, dynamic_sub_len=2000, batch_size=8,
-                 data_path=r"F:\model_report_data\mocap_motion_prediction\data\h36m_dlow_origin",
-                 similar_idx_path=r"F:\model_report_data\stochastic_prediction\gsps\data_multi_modal\t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz",
-                 similar_pool_path=r"F:\model_report_data\stochastic_prediction\gsps\data_multi_modal\data_candi_t_his25_t_pred100_skiprate20.npz",
+                 data_path=r"./dataset",
+                 similar_idx_path=r"./dataset/data_multi_modal/t_his25_1_thre0.500_t_pred100_thre0.100_filtered_dlow.npz",
+                 similar_pool_path=r"./dataset/data_multi_modal/data_candi_t_his25_t_pred100_skiprate20.npz",
                  subjects={"train": [f"S{i}" for i in [1, 5, 6, 7, 8]], "test": [f"S{i}" for i in [9, 11]]},
                  joint_used_17=[0, 1, 2, 3, 6, 7, 8, 12, 13, 14, 15, 17, 18, 19, 25, 26, 27],
                  parents_17=[-1, 0, 1, 2, 0, 4, 5, 0, 7, 8, 9, 8, 11, 12, 8, 14, 15], mode="train",
