@@ -146,7 +146,7 @@ If you use our code, please cite our work
 
 ## Acknowledgments
 
-We follow the code framework of our previous work [MSR-GCN](https://github.com/Droliven/MSRGCN), and some code was adapted from [DLow](https://github.com/Khrylx/DLow) by [Ye Yuan](https://github.com/Khrylx), and [GSPS](https://github.com/wei-mao-2019/gsps) by [Wei Mao](https://github.com/wei-mao-2019). 
+We follow the code framework of our previous work [MSR-GCN \(ICCV 2021\)](https://github.com/Droliven/MSRGCN), and some code was adapted from [DLow](https://github.com/Khrylx/DLow) by [Ye Yuan](https://github.com/Khrylx), and [GSPS](https://github.com/wei-mao-2019/gsps) by [Wei Mao](https://github.com/wei-mao-2019). 
 
 ## Licence
 MIT
