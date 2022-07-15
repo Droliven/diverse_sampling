@@ -12,7 +12,7 @@
 
 1. [Lingwei Dang](https://github.com/Droliven), School of Computer Science and Engineering, South China University of Technology, China, [levondang@163.com](mailto:levondang@163.com)
 2. [Yongwei Nie](https://nieyongwei.net), School of Computer Science and Engineering, South China University of Technology, China, [nieyongwei@scut.edu.cn](mailto:nieyongwei@scut.edu.cn)
-3. [Chengjiang Long](http://www.chengjianglong.com), Meta Reality Lab, USA, [cjfykx@gmail.com](mailto:cjfykx@gmail.com)
+3. [Chengjiang Long](http://www.chengjianglong.com), Meta Reality Lab, USA, [clong1@fb.com](mailto:clong1@fb.com)
 4. [Qing Zhang](http://zhangqing-home.net/), School of Computer Science and Engineering, Sun Yat-sen University, China, [zhangqing.whu.cs@gmail.com](mailto:zhangqing.whu.cs@gmail.com)
 5. [Guiqing Li](http://www2.scut.edu.cn/cs/2017/0629/c22284a328097/page.htm), School of Computer Science and Engineering, South China University of Technology, China, [ligq@scut.edu.cn](mailto:ligq@scut.edu.cn)
 
