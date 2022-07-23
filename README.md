@@ -1,7 +1,7 @@
 # Diverse Sampling
 > Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space]()". 
 
-**Note that another offical [reimplementation]() based on [Jittor](https://github.com/Jittor/Jittor) is also available**.
+**Note that another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) based on [Jittor](https://github.com/Jittor/Jittor) is also available**.
 
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
 [\[Poster\]]()
