@@ -8,7 +8,6 @@
 
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
 [\[Poster\]]()
-[\[Slides\]]()
 [\[Video\]]()
 
 
