@@ -27,7 +27,8 @@ import random
 import numpy as np
 import json
 import pickle
-
+import time
+from gpustat import get_gpu_mem_info
 
 class RunDiverseSampling():
     def __init__(self, exp_name="", device="cuda:0", num_works=0, is_debug=False, args=None):
@@ -267,6 +268,12 @@ class RunDiverseSampling():
     def eval(self, epoch=-1, draw=False):
         self.model.eval()
 
+        all_time_stamps = []
+        all_gpustats = []
+
+        all_time_stamps.append(time.time())
+        all_gpustats.append(get_gpu_mem_info())
+
         diversity = 0
         ade = 0
         fde = 0
@@ -282,6 +289,10 @@ class RunDiverseSampling():
         draw_i = random.randint(0, generator_len - 1)
 
         for i, datas in enumerate(dg):
+            if i % 500 == 0 and i > 0:
+                all_time_stamps.append(time.time())
+                all_gpustats.append(get_gpu_mem_info())
+
             # b, 48, 125
             b, vc, t = datas.shape
             similars = self.test_data.similat_gt_like_dlow[i]  # 0/n, 48, 100
@@ -380,6 +391,8 @@ class RunDiverseSampling():
         self.summary.add_scalar(f"Test/mmade", mmade, epoch)
         self.summary.add_scalar(f"Test/mmfde", mmfde, epoch)
 
+        print(all_time_stamps)
+        print(all_gpustats)
         return diversity, ade, fde, mmade, mmfde
 
 

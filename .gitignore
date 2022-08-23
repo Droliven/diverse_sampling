@@ -1,5 +1,4 @@
 !.gitignore
 .idea/
 __pycache__/
-test*.*
 *.zip
