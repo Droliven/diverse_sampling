@@ -1,0 +1,472 @@
+1
+00:00:02,560 --> 00:00:04,096
+Hi, everyone
+
+2
+00:00:04,352 --> 00:00:08,960
+My name is Lingwei Dang from South China University of Technology
+
+3
+00:00:09,472 --> 00:00:15,616
+I'm here to introduce our work "Diverse Human Motion Prediction via 
+
+4
+00:00:15,872 --> 00:00:18,688
+Gumbel-Softmax Sampling from an Auxiliary Space"
+
+5
+00:00:19,712 --> 00:00:25,856
+It’s a joint work with Yongwei Nie, Chengjiang Long, Qing Zhang, and Guiqing Li
+
+6
+00:00:27,648 --> 00:00:33,792
+The task of Human Motion Prediction (HMP) is that given the sequence
+
+7
+00:00:34,048 --> 00:00:39,680
+of past human poses, we want a model to predict human motions in the future.
+
+
+8
+00:00:41,472 --> 00:00:46,080
+It has a wide range of applications in autonomous driving
+
+9
+00:00:46,336 --> 00:00:48,384
+human-computer interaction
+
+10
+00:00:48,896 --> 00:00:51,712
+animation creation and so on
+
+11
+00:00:56,832 --> 00:01:00,416
+There are two typical approaches for HMP
+
+12
+00:01:01,184 --> 00:01:07,328
+Most previous works perform deterministic HMP that predict only
+
+13
+00:01:07,584 --> 00:01:08,864
+one motion in the future
+
+14
+00:01:09,376 --> 00:01:10,400
+However
+
+15
+00:01:10,912 --> 00:01:17,056
+they ignore the stochasticity nature of human motion, and thus cannot satisfy
+
+16
+00:01:17,312 --> 00:01:23,456
+those safety-critical applications where forecasting multiple possible pose sequences
+
+17
+00:01:23,712 --> 00:01:24,224
+is needed
+
+18
+00:01:26,784 --> 00:01:32,928
+Recently, many diverse and stochastic HMP approaches
+
+19
+00:01:33,184 --> 00:01:39,328
+adopt deep generative networks such as GAN or CVAE to model
+
+20
+00:01:39,584 --> 00:01:43,680
+the conditional distribution of future poses given previous ones
+
+21
+00:01:44,704 --> 00:01:50,848
+They randomly sample latent variables from Gaussian distribution and decode into
+
+22
+00:01:51,104 --> 00:01:52,896
+multiple possible future motions
+
+23
+00:01:56,224 --> 00:01:59,040
+Taking CVAE as an example
+
+24
+00:01:59,296 --> 00:02:00,576
+During training, 
+
+25
+00:02:00,832 --> 00:02:05,696
+the encoder F_ϕ first generates z given x and y
+
+26
+00:02:06,464 --> 00:02:12,608
+and then the decoder G_θ reconstructs the input y given z and x
+
+27
+00:02:14,400 --> 00:02:20,544
+after training a CVAE, one can randomly sample latent codes from a prior Gaussian distribution
+
+28
+00:02:20,800 --> 00:02:26,944
+and then decode the random noises to future sequences 
+
+29
+00:02:27,200 --> 00:02:27,712
+by the CVAE decoder
+
+30
+00:02:31,296 --> 00:02:37,440
+CVAE maximizes the log-likelihood of data y given x
+
+31
+00:02:37,696 --> 00:02:43,328
+by introducing an approximate posterior 𝑞(z|x, y) 
+
+32
+00:02:43,584 --> 00:02:48,704
+and maximizing the evidence lower bound (ELBO)
+
+33
+00:02:49,728 --> 00:02:55,872
+It models the two distributions of 𝑞(z|x, y) and 𝑝(y|x, z) 
+
+34
+00:02:56,128 --> 00:03:01,248
+by two neural networks F_ϕand G_θ
+
+35
+00:03:02,016 --> 00:03:07,648
+and estimates their parameters by optimizing the following loss function
+
+36
+00:03:11,488 --> 00:03:12,512
+However
+
+37
+00:03:12,768 --> 00:03:18,656
+the CVAE model usually learns an imbalanced multimodal conditional distribution
+
+38
+00:03:20,448 --> 00:03:26,592
+Latent codes drawn randomly from the prior distribution most probably
+
+39
+00:03:26,848 --> 00:03:27,872
+correspond to the most likely results
+
+40
+00:03:28,128 --> 00:03:32,480
+that fall in the dominant mode of the distribution of data
+
+41
+00:03:32,992 --> 00:03:38,624
+while ignoring other results of low probability but high fidelity
+
+42
+00:03:41,952 --> 00:03:47,584
+Recently, Yuan et al. proposed a method called DLow sampling
+
+43
+00:03:48,608 --> 00:03:54,752
+given observed poses, DLow uses a neural network to generate multiple separate
+
+44
+00:03:55,008 --> 00:03:56,032
+Gaussian distributions
+
+45
+00:03:56,544 --> 00:04:00,896
+and then samples latent codes from them respectively
+
+46
+00:04:07,040 --> 00:04:08,064
+However
+
+47
+00:04:08,320 --> 00:04:13,184
+directly generating Gaussian distributions has two limitations
+
+48
+00:04:14,208 --> 00:04:15,488
+Firstly, 
+
+49
+00:04:15,744 --> 00:04:20,351
+a network can only generate a fixed number of Gaussian distributions
+
+50
+00:04:21,119 --> 00:04:26,239
+while there may exist much more modes in the target data distribution
+
+51
+00:04:28,543 --> 00:04:29,311
+Secondly,
+
+52
+00:04:29,567 --> 00:04:35,455
+it entangles the performance of diverse prediction with the learning of the network parameters
+
+53
+00:04:35,967 --> 00:04:38,271
+requiring the latter to consider
+
+54
+00:04:38,527 --> 00:04:41,855
+all training data and make tradeoffs between them
+
+55
+00:04:42,623 --> 00:04:47,487
+thus in turn limiting the diverse prediction performance
+
+56
+00:04:54,143 --> 00:04:55,935
+Different from them
+
+57
+00:04:56,191 --> 00:05:00,799
+we learn an auxiliary space from the observed poses
+
+58
+00:05:01,567 --> 00:05:06,943
+then sample points from it and map them to Gaussian distributions
+
+59
+00:05:07,199 --> 00:05:12,831
+which finally correspond to different modes of the target distribution
+
+60
+00:05:16,671 --> 00:05:22,815
+Our method disentangles the correlation between diverse prediction and the network parameter learning
+
+61
+00:05:23,839 --> 00:05:29,727
+and arbitrary number of samples can be generated after the auxiliary space is built
+
+62
+00:05:32,287 --> 00:05:33,567
+In short,
+
+63
+00:05:34,335 --> 00:05:40,479
+we propose a post-hoc sampling strategy to sample diverse results with the
+
+64
+00:05:40,735 --> 00:05:42,527
+pretrained CVAE decoder
+
+65
+00:05:44,575 --> 00:05:50,719
+On one hand, we design a network N_β parameterized by 𝜷 that
+
+66
+00:05:50,975 --> 00:05:55,071
+takes x as input and outputs a base matrix B
+
+67
+00:05:55,327 --> 00:06:01,471
+where each row of B is a basis vector, and any points in the space can be obtained
+
+68
+00:06:01,727 --> 00:06:04,799
+by linearly combining these basis vectors
+
+69
+00:06:07,103 --> 00:06:08,895
+On the other hand,
+
+70
+00:06:09,151 --> 00:06:15,295
+we use the Gumbel-Softmax sampling strategy to sample a coefficient matrix W
+
+71
+00:06:16,319 --> 00:06:17,343
+in which
+
+72
+00:06:17,599 --> 00:06:22,207
+each row contains weights used to combine the basis vectors
+
+73
+00:06:22,975 --> 00:06:29,119
+Then, we multiply W and B together to obtain a point matrix WB
+
+74
+00:06:30,399 --> 00:06:32,447
+where each row represents a point 
+
+75
+00:06:32,703 --> 00:06:36,031
+sampled from the auxiliary space
+
+76
+00:06:38,847 --> 00:06:44,991
+Then, we use another network N_γ to further transform the 𝐾 points
+
+77
+00:06:45,247 --> 00:06:48,063
+to Gaussian distributions parameters
+
+78
+00:06:48,319 --> 00:06:50,367
+A_k and b_k
+
+79
+00:06:52,159 --> 00:06:58,303
+Finally, we sample latent variables z and decode z_k and x 
+
+80
+00:06:58,559 --> 00:07:00,351
+into a result ̃y_k
+
+81
+00:07:04,959 --> 00:07:10,079
+We impose three kinds of loss functions on the results 
+
+82
+00:07:10,335 --> 00:07:13,407
+to train the proposed sampling framework
+
+83
+00:07:14,687 --> 00:07:17,503
+First is the Hinge-diversity loss
+
+84
+00:07:18,271 --> 00:07:24,415
+which explicitly enforce the distance between any pair of generated predictions
+
+85
+00:07:24,671 --> 00:07:27,999
+to be no less than a user-defined threshold 𝜂
+
+86
+00:07:30,303 --> 00:07:31,583
+Second
+
+87
+00:07:32,095 --> 00:07:33,631
+is the Accuracy loss
+
+88
+00:07:33,887 --> 00:07:39,519
+that enforces at least one of the predictions to be similar to the ground truth
+
+89
+00:07:42,335 --> 00:07:48,479
+Third is the KL divergence loss which ensures the model to produce
+
+90
+00:07:48,735 --> 00:07:52,063
+realistic and plausible results instead of those
+
+91
+00:07:52,319 --> 00:07:55,903
+with high diversity but are physically invalid
+
+92
+00:07:59,231 --> 00:08:03,583
+We evaluate our method on the two public motion capture datasets
+
+93
+00:08:03,839 --> 00:08:08,959
+Human3.6M dataset and the HumanEva-I dataset
+
+94
+00:08:10,751 --> 00:08:14,335
+And we use five metrics to evaluate our method
+
+95
+00:08:15,359 --> 00:08:20,735
+APD is the Average Pairwise Distance of results predicted from an input
+
+96
+00:08:21,759 --> 00:08:25,599
+This metric measures the diversity of the results
+
+97
+00:08:27,391 --> 00:08:33,535
+ADE computes the Average Displacement Error between the ground truth and the result
+
+98
+00:08:33,791 --> 00:08:36,351
+most similar to the ground truth
+
+99
+00:08:37,887 --> 00:08:42,239
+FDE, which stands for Final Displacement Error, 
+
+100
+00:08:42,751 --> 00:08:46,335
+only calculates the distance between the last pose of GT
+
+101
+00:08:46,591 --> 00:08:51,455
+and the last pose of the most similar result to GT
+
+102
+00:08:52,991 --> 00:08:59,135
+MMADE and MMFDE are the multimodal versions of ADE and FDE
+
+103
+00:09:03,231 --> 00:09:04,767
+As shown in this table
+
+104
+00:09:05,023 --> 00:09:11,167
+our approach outperforms all the other approaches on both diversity metric (APD) 
+
+105
+00:09:11,423 --> 00:09:17,567
+and accuracy metrics (ADE, FDE, MMADE and MMFDE)
+
+106
+00:09:21,663 --> 00:09:24,735
+To show the quality of the predicted poses
+
+107
+00:09:24,991 --> 00:09:31,135
+we visualize the generated motions predicted by DLow
+
+108
+00:09:31,391 --> 00:09:31,903
+GSPS and our method
+
+109
+00:09:33,183 --> 00:09:39,327
+These two GIF pictures vividly show that our method produces 
+
+110
+00:09:39,583 --> 00:09:41,375
+more diverse results than others
+
+111
+00:09:47,007 --> 00:09:50,335
+This figure illustrates the holistic views of results
+
+112
+00:09:50,591 --> 00:09:52,127
+ Given one input, 
+
+113
+00:09:52,383 --> 00:09:56,735
+we generate 1000 results and project them into 2D space
+
+114
+00:09:58,015 --> 00:10:02,111
+Note that DLow can only sample 50 results at a time
+
+115
+00:10:02,623 --> 00:10:08,255
+To generate 1000 results for DLow, we repeatedly run DLow 20 times
+
+116
+00:10:08,511 --> 00:10:13,887
+As can be seen, our results occupy the 2D space more evenly
+
+117
+00:10:15,935 --> 00:10:19,007
+You can scan the QR code for our project
+
+118
+00:10:19,263 --> 00:10:20,031
+Thank you

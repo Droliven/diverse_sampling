@@ -7,8 +7,10 @@
 **Note that another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) based on [Jittor](https://github.com/Jittor/Jittor) is also available**.
 
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
-[\[Slides\]]()
-[\[Video\]]()
+[\[Slides\]](./assets/MM22-fp0856.pptx)
+[\[Video\]](./assets/MM22-fp0856.mp4)
+[\[Audio\]](./assets/MM22-fp0856.mp3)
+[\[Subtitles\]](./assets/MM22-fp0856.srt)
 
 
 ## Authors
