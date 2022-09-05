@@ -1,6 +1,6 @@
 # Diverse Sampling
 
-<a href = "https://pytorch.org/"><img src="./assets/PyTorch.png" width="20%"></a>
+<a href = "https://pytorch.org/"><img src="./assets/PyTorch.png" width="15%"></a>
 
 > Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space]()". 
 
