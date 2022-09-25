@@ -8,6 +8,8 @@
 and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available**.
 
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
+[\[Poster PDF\]](./assets/mmfp0856_A0poster_horizontal.pdf)
+[\[Poster PPT\]](./assets/mmfp0856_A0poster_horizontal.pptx)
 [\[Slides\]](./assets/MM22-fp0856.pptx)
 [\[Video\]](./assets/MM22-fp0856.mp4)
 [\[Audio\]](./assets/MM22-fp0856.mp3)
@@ -27,10 +29,11 @@ and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) 
 
 ## Overview
 
-<a href="./assets/teaser.png">
-  <img src="./assets/teaser.png" />
+<a href="./assets/mmfp0856_A0poster_horizontal.png">
+  <img src="./assets/mmfp0856_A0poster_horizontal.png" alt="mmfp0856_A0poster_horizontal.png"/>
 </a>
-  <p> Different strategies for sampling diverse results from an imbalanced multimodal distribution. The vanilla CVAE model randomly samples latent codes from a prior distribution which are then decoded into results that only reside in the major mode of the target distribution. DLow first generates multiple Gaussian distributions, and then samples latent codes from different Gaussian priors. The Gaussian priors can be viewed as corresponding to different modes of the target distribution, therefore this method can cover more modes than random sampling. Our method generates multiple Gaussian distributions by sampling points from an auxiliary space. Due to the high flexibility and capacity of the space, our method is able to cover even more modes than DLow. The rightmost are the last poses of future pose sequences predicted from a given input, all stacked together to visually show that our results are more diverse than the others.
+  <p> We propose a novel sampling method converts the sampling of the distribution into randomly sampling of points from an auxiliary space for diverse and accurate sampling.
+
   </p>
 
 
