@@ -2,10 +2,10 @@
 
 <a href = "https://pytorch.org/"><img src="./assets/PyTorch.png" width="15%"></a>
 
-> Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space](https://dl.acm.org/doi/abs/10.1145/3503161.3547956?casa_token=qjwN961TvCYAAAAA:jx9hQIsbP7BByTnNc1pYmX67T8ZyRprb0UdK4dprBCPNTvhEwmjYLWVSgAqOXlPBe_vh5I9OqPo)". 
+> Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "**[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space](https://dl.acm.org/doi/abs/10.1145/3503161.3547956?casa_token=qjwN961TvCYAAAAA:jx9hQIsbP7BByTnNc1pYmX67T8ZyRprb0UdK4dprBCPNTvhEwmjYLWVSgAqOXlPBe_vh5I9OqPo)**". 
 
-**Note that our previous work for deterministic human motion prdiction [MSR-GCN: Multi-Scale Residual Graph Convolution Networks for Human Motion Prediction (ICCV2021)](https://github.com/Droliven/MSRGCN) has been released,
-and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available**.
+Note that our previous work for deterministic human motion prdiction [MSR-GCN: Multi-Scale Residual Graph Convolution Networks for Human Motion Prediction (ICCV2021)](https://github.com/Droliven/MSRGCN) has been released,
+and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available.
 
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
 [\[Poster PDF\]](./assets/acmmm2022_poster_mmfp0856.pdf)
