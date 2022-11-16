@@ -4,11 +4,6 @@
 
 > Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "**[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space](https://dl.acm.org/doi/abs/10.1145/3503161.3547956?casa_token=qjwN961TvCYAAAAA:jx9hQIsbP7BByTnNc1pYmX67T8ZyRprb0UdK4dprBCPNTvhEwmjYLWVSgAqOXlPBe_vh5I9OqPo)**". 
 
-**Notes**:
-+ 2022.10.15: Our previous work for deterministic human motion prdiction [MSR-GCN: Multi-Scale Residual Graph Convolution Networks for Human Motion Prediction (ICCV2021)](https://github.com/Droliven/MSRGCN) has been released,
-and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available.
-+ 2022.11.16: Another good work for [stock ranking or selection (TRA, Lin et al., KDD2018)](https://dl.acm.org/doi/abs/10.1145/3447548.3467358?casa_token=9xPvXm1ixGMAAAAA:6rQOHK9div8JSQxg79McvxwepVYXpRFSd592sjH1tA8TUELROA9l5aSq_d4SX07gBQz98_9hCsk) which has similar similar idea with ours is available at [Microsoft QLib](https://github.com/microsoft/qlib/blob/main/examples/benchmarks/TRA/README.md)
-
 [\[Paper & Supp\]](https://arxiv.org/abs/2207.07351)
 [\[Poster PDF\]](./assets/acmmm2022_poster_mmfp0856.pdf)
 [\[Poster PPT\]](./assets/mmfp0856_A0poster_vertical.pptx)
@@ -16,6 +11,12 @@ and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) 
 [\[Video\]](./assets/acmmm2022_video_mmfp0856.mp4)
 [\[Audio\]](./assets/MM22-fp0856.mp3)
 [\[Subtitles\]](./assets/MM22-fp0856.srt)
+
+
+**Notes**:
++ 2022.10.15: Our previous work for deterministic human motion prdiction [MSR-GCN: Multi-Scale Residual Graph Convolution Networks for Human Motion Prediction (ICCV2021)](https://github.com/Droliven/MSRGCN) has been released,
+and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available.
++ 2022.11.16: Another good work for [stock ranking or selection (TRA, Lin et al., KDD2018)](https://dl.acm.org/doi/abs/10.1145/3447548.3467358?casa_token=9xPvXm1ixGMAAAAA:6rQOHK9div8JSQxg79McvxwepVYXpRFSd592sjH1tA8TUELROA9l5aSq_d4SX07gBQz98_9hCsk) which has a similar idea with ours is available at [Microsoft QLib](https://github.com/microsoft/qlib/blob/main/examples/benchmarks/TRA/README.md).
 
 
 ## Authors
