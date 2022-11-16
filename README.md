@@ -16,7 +16,7 @@
 **Notes**:
 + 2022.10.15: Our previous work for deterministic human motion prdiction [MSR-GCN: Multi-Scale Residual Graph Convolution Networks for Human Motion Prediction (ICCV2021)](https://github.com/Droliven/MSRGCN) has been released,
 and another offical [reimplementation](https://github.com/Droliven/DHMP_jittor) of this project based on [Jittor](https://github.com/Jittor/Jittor) is also available.
-+ 2022.11.16: Another good work for [stock ranking or selection (TRA, Lin et al., KDD2018)](https://dl.acm.org/doi/abs/10.1145/3447548.3467358?casa_token=9xPvXm1ixGMAAAAA:6rQOHK9div8JSQxg79McvxwepVYXpRFSd592sjH1tA8TUELROA9l5aSq_d4SX07gBQz98_9hCsk) which has a similar idea with ours is available at [Microsoft QLib](https://github.com/microsoft/qlib/blob/main/examples/benchmarks/TRA/README.md).
++ 2022.11.16: Another good work for stock ranking or selection [Learning Multiple Stock Trading Patterns with Temporal Routing Adaptor and Optimal Transport (TRA, Lin et al., KDD2021)](https://dl.acm.org/doi/abs/10.1145/3447548.3467358?casa_token=9xPvXm1ixGMAAAAA:6rQOHK9div8JSQxg79McvxwepVYXpRFSd592sjH1tA8TUELROA9l5aSq_d4SX07gBQz98_9hCsk) which has a similar idea with ours is available at [Microsoft QLib](https://github.com/microsoft/qlib/blob/main/examples/benchmarks/TRA/README.md).
 
 
 ## Authors
