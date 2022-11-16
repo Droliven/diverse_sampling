@@ -147,12 +147,12 @@ diverse_sampling
 If you use our code, please cite our work
 
 ```
-@InProceedings{Dang_2022_acmmm,
-    author    = {Dang, Lingwei and Nie, Yongwei and Long, Chengjiang and Zhang, Qing and Li, Guiqing},
-    title     = {Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space},
-    booktitle = {Proceedings of the 30th ACM International Conference on Multimedia (ACM MM)},
-    month     = {October},
-    year      = {2022},
+@inproceedings{dang2022diverse,
+  title={Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space},
+  author={Dang, Lingwei and Nie, Yongwei and Long, Chengjiang and Zhang, Qing and Li, Guiqing},
+  booktitle={Proceedings of the 30th ACM International Conference on Multimedia},
+  pages={5162--5171},
+  year={2022}
 }
 ```
 
