@@ -1,5 +1,9 @@
 # Diverse Sampling
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/diverse-human-motion-prediction-via-gumbel/human-pose-forecasting-on-human36m)](https://paperswithcode.com/sota/human-pose-forecasting-on-human36m?p=diverse-human-motion-prediction-via-gumbel)
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/diverse-human-motion-prediction-via-gumbel/human-pose-forecasting-on-humaneva-i)](https://paperswithcode.com/sota/human-pose-forecasting-on-humaneva-i?p=diverse-human-motion-prediction-via-gumbel)
+
 <a href = "https://pytorch.org/"><img src="./assets/PyTorch.png" width="15%"></a>
 
 > Official [pytorch](https://github.com/pytorch/pytorch) project of ACMMM2022 accepted paper "**[Diverse Human Motion Prediction via Gumbel-Softmax Sampling from an Auxiliary Space](https://dl.acm.org/doi/abs/10.1145/3503161.3547956?casa_token=qjwN961TvCYAAAAA:jx9hQIsbP7BByTnNc1pYmX67T8ZyRprb0UdK4dprBCPNTvhEwmjYLWVSgAqOXlPBe_vh5I9OqPo)**". 
